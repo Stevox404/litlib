@@ -16,7 +16,7 @@ Storage of files on s3
 
 1. __[utils](https://github.com/Stevox404/litlib/tree/master/utils)__:
 Some other utility functions:
-    * logManager
+    * manageLogs
     * ServerError
     * snakeToCamelCase
     * camelToSnakeCase

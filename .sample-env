@@ -1,0 +1,29 @@
+--- pgdba ---
+DB_USER=user
+DB_PASSWORD=pass
+DB_PORT=5432
+DB_DATABASE=db
+DB_DATABASE_TEST=db_t
+
+
+--- Mailer ---
+EMAIL_NAME=name
+EMAIL_ADDRESS=name@email.com
+EMAIL_PASSWORD=pass
+------ use one of these, EMAIL_SERVICE is given priority ------
+EMAIL_SERVICE=google
+--------------------------------------------------------------
+EMAIL_HOST=smtp.host.email
+EMAIL_PORT=587
+--------------------------------------------------------------
+
+
+--- filestore.s3 ---
+S3_BUCKET=bucket
+AWS_ACCESS_KEY_ID=awsid
+AWS_SECRET_ACCESS_KEY=awskey
+
+
+--- manageLogs ---
+VERBOSITY=1
+VERBOSITY_TEXT=log
