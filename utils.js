@@ -18,7 +18,7 @@ ServerError.prototype = Error.prototype;
 
 
 let loggingManaged = false;
-function manageLogging(){
+function logManager(){
     if(loggingManaged) return;
     
     loggingManaged = true;
@@ -135,6 +135,6 @@ function wrapAsync(fn){
 }
 
 module.exports = { 
-    manageLogging, ServerError, snakeToCamelCase, camelToSnakeCase, 
+    logManager, ServerError, snakeToCamelCase, camelToSnakeCase, 
     wrapAsync, 
 }
