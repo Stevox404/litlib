@@ -5,6 +5,9 @@ let includeResArray = false; // TODO
 require('dotenv').config();
 
 
+/**
+ * @type Pool A pg Pool object
+ */
 let pool;
 function init(config){
 	if (config) {
@@ -48,12 +51,15 @@ function init(config){
 	
 	
 	function validateConfig(config){
-		if (!(config.user && config.password && config.port && config.database)) {
-			throw new Error(`Please pass a proper config file or set up the .env file with the keys: 
-				\tprocess.env.PGDB_USER={user} 
-				\tprocess.env.PGDB_PASSWORD={password} 
-				\tprocess.env.PGDB_PORT={port} 
-				\tprocess.env.PGDB_DATABASE={database_name}`);
+        config = { // default values
+            max: 20,
+            idleTimeoutMillis: 60000,
+            port: 5432,
+            host: 'localhost',
+            ...config
+        }
+		if (!(config.user && config.password && config.database)) {
+			throw new Error(`Please pass a proper config file or set up the .env file with proper keys`);
 		}
 	}
 }
@@ -216,7 +222,7 @@ function db(){
     }
     
     return {
-        query, 
+        query, pool,
         ...(require('./db_utils')),
     }
 }

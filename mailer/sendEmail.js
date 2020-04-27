@@ -1,41 +1,50 @@
 const nodemailer = require('nodemailer');
+const { promisify } = require('util');
 
-function sendEmail({ req, recipient, message, subject, args }) {
-    return new Promise((resolve, reject) => {
-        let homepage = req.hostname;
-
-        //TODO Add disclaimer or something
-        message += '<br/><br/><a href="' + homepage + '">www.mywebsite.com</a> <br/>' +
-            'MY WEBSITE<br/>';
-
-
-        let config = {
+let config, transporter;
+async function init(conf) {
+    conf = {
+        username: process.env.EMAIL_NAME,
+        email: process.env.EMAIL_ADDRESS,
+        footer: '',
+        transportOpts: {
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
             auth: {
                 user: process.env.EMAIL_ADDRESS,
                 pass: process.env.EMAIL_PASSWORD,
             },
             tls: {
                 rejectUnauthorized: false
-            },
-        }
-        const service = process.env.EMAIL_SERVICE;
-        if (service){
-            config = {...config, service}
-        } else {
-            config = {
-                ...config,
-                host: process.env.EMAIL_HOST,
-                port: process.env.EMAIL_PORT,
             }
-        }
-        let transporter = nodemailer.createTransport(config);
+        },
+        ...conf
+    }
 
+    await validateConfig(conf);
+    config = conf;
+
+    async function validateConfig({ transportOpts }) {
+        transporter = nodemailer.createTransport(transportOpts);
+        const verify = promisify(transporter.verify);
+        await verify();
+    }
+}
+
+function send({ from, to, message, ...otherArgs }) {
+    if (!transporter) throw new Error('Email configuration unset');
+
+    return new Promise((resolve, reject) => {
+        const { username, email, footer } = config
+
+        from = from || `"${username}"${email}`;
+        footer && (message += footer);
 
         let mailOptions = {
-            from: process.env.EMAIL_ADDRESS,
-            to: recipient,
-            subject,
-            html: message
+            from,
+            to,
+            html: message,
+            ...otherArgs
         }
 
         transporter.sendMail(mailOptions, function (err, info) {
@@ -48,8 +57,10 @@ function sendEmail({ req, recipient, message, subject, args }) {
             }
 
         });
-    })
+    });
 }
 
 
-module.exports = sendEmail;
+module.exports = {
+    init, send
+};

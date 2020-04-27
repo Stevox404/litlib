@@ -28,16 +28,42 @@ function createUpdateStatement(table, fields, condition){
 		return query;
 	} else {
 		//No changes to be made
-		return null;
+		return '';
 	}
 }
 
-function createInsertStatement(){
+function createInsertStatement(table, fields){
 	//TODO
+	let query = {
+		text: `INSERT INTO ${table} (`,
+		values: []
+	}
+	
+	let valStmt = '';
+	Object.keys(fields).forEach(key => {
+		const col = camelToSnakeCase(key);
+		query.values.push(fields[key]);
+		const commma = addComma(query.values.length);
+		query.text += `${commma} ${col}`;
+		valStmt += `${commma} $${query.values.length}`;
+	});
+
+	query.text += `) VALUES (${valStmt})`;
+	
+	if (query.values.length > 0) {
+		return query;
+	} else {
+		//No changes to be made
+		return '';
+	}
 }
 
+
+
+
 module.exports = {
-	createUpdateStatement
+	createUpdateStatement,
+	createInsertStatement
 };
 
 /**
