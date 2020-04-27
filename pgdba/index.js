@@ -76,6 +76,7 @@ function init(config){
  *   Optionally ommited to return a Promise.
  */
 function query(statement, cb){
+    if(!pool) init();
 	if(Array.isArray(statement)){
 		return db_transaction(statement, cb);
 	}
