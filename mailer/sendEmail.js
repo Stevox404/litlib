@@ -1,39 +1,45 @@
 const nodemailer = require('nodemailer');
-const { promisify } = require('util');
 
 let config, transporter;
-async function init(conf) {
-    conf = {
-        username: process.env.EMAIL_NAME,
-        email: process.env.EMAIL_ADDRESS,
-        footer: '',
-        transportOpts: {
-            host: process.env.EMAIL_HOST,
-            port: process.env.EMAIL_PORT,
-            auth: {
-                user: process.env.EMAIL_ADDRESS,
-                pass: process.env.EMAIL_PASSWORD,
+function init(conf) {
+    if(!conf){
+        require('dotenv').config();
+
+        conf = {
+            username: process.env.EMAIL_NAME,
+            email: process.env.EMAIL_ADDRESS,
+            footer: '',
+            transportOpts: {
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
+                auth: {
+                    user: process.env.EMAIL_ADDRESS,
+                    pass: process.env.EMAIL_PASSWORD,
+                },
             },
-            tls: {
-                rejectUnauthorized: false
-            }
-        },
-        ...conf
+        }
     }
 
-    await validateConfig(conf);
+    if(!conf.transportOpts.tls) {
+        conf.transportOpts.tls = {
+            rejectUnauthorized: false
+        }
+    }
+    
+    validateConfig(conf);
     config = conf;
 
-    async function validateConfig({ transportOpts }) {
+    function validateConfig({ transportOpts }) {
+        const {host, port, auth } = transportOpts;
+
+        if(!host || !port || !auth.user || !auth.pass ){
+            throw new Error('mailer.email configuration invalid');
+        }
         transporter = nodemailer.createTransport(transportOpts);
-        const verify = promisify(transporter.verify);
-        await verify();
     }
 }
 
 function send({ from, to, message, ...otherArgs }) {
-    if (!transporter) throw new Error('Email configuration unset');
-
     return new Promise((resolve, reject) => {
         const { username, email, footer } = config
 
@@ -61,6 +67,10 @@ function send({ from, to, message, ...otherArgs }) {
 }
 
 
-module.exports = {
-    init, send
+module.exports = (config) => {
+    if (config || !transporter) init(config);
+
+    return {
+        send,
+    }
 };

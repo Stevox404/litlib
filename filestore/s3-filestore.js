@@ -1,24 +1,38 @@
-require('dotenv').config();
-
-
-//Storage
 const aws = require('aws-sdk');
-const S3_BUCKET = process.env.S3_BUCKET;
 aws.config.region = 'us-east-1';
 const s3 = new aws.S3();
-const s3url = "https://" + S3_BUCKET + ".s3.amazonaws.com";
 const fsPromises = require('fs').promises;
 
-if(!S3_BUCKET){
-    throw new Error('Please set the S3_BUCKET env variable');
-}
+let s3Config;
 
+
+
+function init(config){
+    if(!config){
+        require('dotenv').config();
+        config = {
+            bucket: process.env.S3_BUCKET,
+            region: process.env.S3_REGION || 'us-east-1',
+        }
+    }
+    
+    const { bucket, region } = config;
+    
+    if(!bucket){
+        throw new Error('Please set the S3_BUCKET env variable');
+    }
+
+    aws.config.region = region;
+    s3Config.url = `https://${bucket}.s3.amazonaws.com`;
+
+
+}
 
 const getFile = (filepath) => {
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             const params = {
-                Bucket: S3_BUCKET,
+                Bucket: s3Config.bucket,
                 Key: filepath,
             }
 
@@ -96,7 +110,7 @@ const saveFile = (filepath, file) => {
             const data = file.path ? await fsPromises.readFile(file.path) : file;
 
             const params = {
-                Bucket: S3_BUCKET,
+                Bucket: s3Config.bucket,
                 Key: filepath,
                 Body: data,
                 ACL: 'public-read',
@@ -114,7 +128,7 @@ const saveFile = (filepath, file) => {
                     err = new Error('Error in saving file: ' + filepath + ' in bucket. Error: ' + err);
                     return reject(err);
                 }
-                resolve(`${s3url}/${filepath}`)
+                resolve(`${s3Config.url}/${filepath}`)
             });
 
         })
@@ -125,14 +139,14 @@ const deleteFile = (filepath) => {
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             // Check if fully qualified filepath
-            const regex = RegExp(`${s3url}/(.+)`);
+            const regex = RegExp(`${s3Config.url}/(.+)`);
             const m = filepath.match(regex);
             if (m && m[1]) {
                 filepath = m[1];
             }
 
             const params = {
-                Bucket: S3_BUCKET,
+                Bucket: s3Config.bucket,
                 Key: filepath,
             };
             s3.deleteObject(params, (err) => {
@@ -144,6 +158,11 @@ const deleteFile = (filepath) => {
 };
 
 
-module.exports = {
-    getFile, saveFile, deleteFile, url: s3url
+module.exports = (config) => {
+    if(config || !s3Config) init(config);
+    
+    return {
+        getFile, saveFile, deleteFile, 
+        url: s3Config.url, path: s3Config.url,
+    }
 }

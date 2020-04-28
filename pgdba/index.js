@@ -2,17 +2,15 @@ const { Pool } = require('pg');
 const url = require('url');
 let includeResArray = false; // TODO
 
-require('dotenv').config();
-
 
 /**
  * @type Pool A pg Pool object
  */
 let pool;
 function init(config){
-	if (config) {
-		validateConfig(config);
-	} else {
+	if (!config) {
+        require('dotenv').config();
+
         if (process.env.DATABASE_URL) {
             //Heroku
             const params = url.parse(process.env.DATABASE_URL);
@@ -41,10 +39,10 @@ function init(config){
                 config.database = process.env.PGDB_DATABASE_TEST;
             }
         }
-    
-        validateConfig(config);
     }
-
+    
+    validateConfig(config);
+    
     pool = new Pool(config);
 	return;
 	
@@ -217,18 +215,19 @@ function db_transaction(statements, cb) {
 }
 
 
-function db(){
-    if(!pool){
-        throw new Error('Database is not initialized. Please call init() at least once.');
+
+
+/* TODO Manage multiple dbs */
+module.exports = (config) => {
+    if(config || !pool){
+        init(config);
     }
     
     return {
         query, pool,
         ...(require('./db_utils')),
     }
-}
-
-module.exports = { init, db }
+};
 
 
 

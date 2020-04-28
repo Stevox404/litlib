@@ -1,8 +1,9 @@
 const { exec } = require('child_process');
 const { promisify } = require('util');
-const { init, db } = require('../pgdba');
+const db = require('../pgdba');
 const { expect } = require('chai');
 const execAsync = promisify(exec);
+// const { query, createInsertStatement, createUpdateStatement } = db();
 
 describe('pgdba', () => {
 
@@ -11,7 +12,7 @@ describe('pgdba', () => {
         await execAsync(`psql -c "DROP DATABASE IF EXISTS pgdba_test"`);
         await execAsync(`psql -c "CREATE USER pgdba_user WITH PASSWORD '123'"`);
         await execAsync(`psql -c "CREATE DATABASE pgdba_test"`);
-        init({
+        db({
             user: 'pgdba_user',
             password: '123',
             database: 'pgdba_test'
