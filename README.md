@@ -1,6 +1,6 @@
 # litlib
 A little library of server utility functions
-<sup>***Note: Version 1.3.0 was the last stable release, no changes shall be made aside from bug fixes until version 2. For new developments, please use v1.3.0-alpha.*** </sup>
+<sup>***Note: Version 1.3.0 was the last stable release, no changes shall be made aside from bug fixes until version 2. For new developments, please use v1.3.1-alpha.*** </sup>
 
 
 Included utilities:
