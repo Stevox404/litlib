@@ -1,5 +1,7 @@
 # litlib
 A little library of server utility functions
+<sup>***Note: Version 1 is actively under development unstable and thus unstable.*** </sup>
+
 
 Included utilities:
 1. __[pgdba](https://github.com/Stevox404/litlib/tree/master/pgdba)__:
