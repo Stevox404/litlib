@@ -128,7 +128,7 @@ function wrapAsync(fn){
             return promise;
         }
 
-        fn(req,res, next).catch(err => {
+        promise.catch(err => {
             if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
             const {filename} = res.locals;
             if(filename){
