@@ -44,7 +44,7 @@ function manageLogs(){
         showing.push('logs');
         shouldShow.log = true;
     }
-    console.log(`Showing: [${showing.join(' | ')}]`);
+    console.info(`Showing: [${showing.join(' | ')}]`);
 
     const error = console.error;
     console.error = (...err) => {
@@ -122,9 +122,14 @@ function changeCase(val, { toSnake, reduceNullArrayElements = true } = {}) {
 
 function wrapAsync(fn){
     return function(req, res, next){
+        const promise = fn(req, res, next);
+        if(!promise || promise.constructor !== Promise){
+            console.warn("Undefined or non-Promise object returned");
+            return promise;
+        }
+
         fn(req,res, next).catch(err => {
             if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
-
             const {filename} = res.locals;
             if(filename){
                 err.stack += `    at ${filename}\n`;
