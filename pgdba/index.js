@@ -216,10 +216,12 @@ function db_transaction(statements, cb) {
 
 
 
-
-/* TODO Manage multiple dbs */
-module.exports = (config) => {
+/**
+ * @returns {databaseObject}
+ */
+function getDb(config){
     if(config || !pool){
+        /* TODO Manage multiple dbs */
         init(config);
     }
     
@@ -227,7 +229,10 @@ module.exports = (config) => {
         query, pool,
         ...(require('./db_utils')),
     }
-};
+}
+
+
+ module.exports = getDb;
 
 
 
@@ -250,4 +255,14 @@ module.exports = (config) => {
  * @callback requestCallback
  * @param {object} err
  * @param {object[]} results
+ */
+
+/**
+ * Database object
+ * @typedef {Object} databaseObject
+ * @property {query} query - Used to execute a query on the database
+ * @property {import('./db_utils').createInsertStatement} createInsertStatement
+    - Creates dynamic insert statements to query the database
+ * @property {import('./db_utils').createUpdateStatement} createUpdateStatement
+ * - Creates dynamic update statements to query the database
  */
