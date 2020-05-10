@@ -22,7 +22,7 @@ function init(config){
                 host: params.hostname,
                 port: params.port,
                 database: params.pathname.split('/')[1],
-                ssl: true
+                ssl: { rejectUnauthorized: false }
             };
         } else {
             config = {
@@ -32,7 +32,8 @@ function init(config){
                 idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS || 60000,
                 port: process.env.PGDB_PORT || 5432,
                 host: process.env.PGDB_HOST || 'localhost',
-                database: process.env.PGDB_DATABASE
+                database: process.env.PGDB_DATABASE,
+                ssl: { rejectUnauthorized: false }
             }
         
             if (process.env.NODE_ENV === 'test' && process.env.PGDB_DATABASE_TEST) {
