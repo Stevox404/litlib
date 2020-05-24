@@ -26,18 +26,18 @@ function init(config){
             };
         } else {
             config = {
-                user: process.env.PGDB_USER,
-                password: process.env.PGDB_PASSWORD,
+                user: process.env.DB_USER,
+                password: process.env.DB_PASSWORD,
                 max: process.env.MAX_POOL || 20,
                 idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS || 60000,
-                port: process.env.PGDB_PORT || 5432,
-                host: process.env.PGDB_HOST || 'localhost',
-                database: process.env.PGDB_DATABASE,
+                port: process.env.DB_PORT || 5432,
+                host: process.env.DB_HOST || 'localhost',
+                database: process.env.DB_DATABASE,
                 ssl: { rejectUnauthorized: false }
             }
         
-            if (process.env.NODE_ENV === 'test' && process.env.PGDB_DATABASE_TEST) {
-                config.database = process.env.PGDB_DATABASE_TEST;
+            if (process.env.NODE_ENV === 'test' && process.env.DB_DATABASE_TEST){
+                config.database = process.env.DB_DATABASE_TEST;
             }
         }
     }
