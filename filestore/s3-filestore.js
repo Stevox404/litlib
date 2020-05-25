@@ -29,6 +29,8 @@ function init(config){
 }
 
 const getFile = (filepath) => {
+    if(!filepath) return null;
+    
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             const params = {
@@ -105,6 +107,8 @@ function getMIME(filepath) {
 
 
 const saveFile = (filepath, file) => {
+    if(!filepath || !file) return null;
+    
     return Promise.resolve().then(() =>
         new Promise(async (resolve, reject) => {
             const data = file.path ? await fsPromises.readFile(file.path) : file;
@@ -136,6 +140,8 @@ const saveFile = (filepath, file) => {
 };
 
 const deleteFile = (filepath) => {
+    if(!filepath) return null;
+    
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             // Check if fully qualified filepath
