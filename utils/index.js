@@ -137,11 +137,6 @@ function wrapAsync(fn) {
     }
 }
 
-function omfg() {
-    var caller = getCaller()
-    console.log(caller)
-  }
-
 function getCaller() {
     const ogPrepStack = Error.prepareStackTrace;
     Error.prepareStackTrace = function (_, stack) {
