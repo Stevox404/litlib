@@ -128,9 +128,9 @@ function wrapAsync(fn) {
             return promise;
         }
 
+        const caller = res.locals.filename || getCaller();
         promise.catch(err => {
             if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
-            const caller = getCaller();
             err.stack += `    at ${caller}\n`;
             next(err);
         });
@@ -145,17 +145,21 @@ function getCaller() {
     const err = new Error();
     const { stack } = err;
     Error.prepareStackTrace = ogPrepStack;
-    const currFile = stack[0].getFileName();
     let callerFile;
-    for(let i = 0; i < stack.length; i++){
+    currFile = stack[0].getFileName();
+    for(let i = 1; i < stack.length; i++){
         callerFile = stack[i].getFileName();
-        if(callerFile !== currFile){
+        const path = require('path');
+        if(
+            callerFile !== currFile && 
+            path.isAbsolute(callerFile) && 
+            !/node_modules/.test(callerFile)
+        ){
             break;
         }
     }
     return callerFile;
 }
-
 
 module.exports = {
     manageLogs, ServerError, snakeToCamelCase, camelToSnakeCase,
