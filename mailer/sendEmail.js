@@ -31,9 +31,9 @@ function setConfiguration(config) {
     emailConfig = config;
 
     function validateConfig({ transportOpts }) {
-        const {host, port, auth } = transportOpts;
+        const {host, port, auth, service } = transportOpts;
 
-        if(!host || !port || !auth.user || !auth.pass ){
+        if((!service && (!host || !port)) || !auth.user || !auth.pass ){
             throw new Error('mailer.email configuration invalid');
         }
         transporter = nodemailer.createTransport(transportOpts);
