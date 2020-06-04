@@ -1,20 +1,5 @@
 require('dotenv').config();
-
-function ServerError(msg, { status, text } = {}) {
-    if (msg.status && !(/error/i.test(msg.name))) {
-        status = msg.status;
-        text = msg.text;
-        msg = undefined;
-    }
-
-    this.name = 'ServerError';
-    this.message = msg || text || '';
-    this.status = status || 500;
-    this.text = text;
-    this.stack = `Error\n`;
-}
-ServerError.prototype = Error.prototype;
-
+const ServerError = require('./ServerError');
 
 
 let loggingManaged = false;
