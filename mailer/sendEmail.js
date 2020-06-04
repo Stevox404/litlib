@@ -1,17 +1,18 @@
 const nodemailer = require('nodemailer');
 
-let config, transporter;
-function init(conf) {
-    if(!conf){
+let emailConfig, transporter;
+function setConfiguration(config) {
+    if(!config){
         require('dotenv').config();
 
-        conf = {
+        config = {
             username: process.env.EMAIL_NAME,
             email: process.env.EMAIL_ADDRESS,
             footer: '',
             transportOpts: {
                 host: process.env.EMAIL_HOST,
                 port: process.env.EMAIL_PORT,
+                service: process.env.EMAIL_SERVICE,
                 auth: {
                     user: process.env.EMAIL_ADDRESS,
                     pass: process.env.EMAIL_PASSWORD,
@@ -20,14 +21,14 @@ function init(conf) {
         }
     }
 
-    if(!conf.transportOpts.tls) {
-        conf.transportOpts.tls = {
+    if(!config.transportOpts.tls) {
+        config.transportOpts.tls = {
             rejectUnauthorized: false
         }
     }
     
-    validateConfig(conf);
-    config = conf;
+    validateConfig(config);
+    emailConfig = config;
 
     function validateConfig({ transportOpts }) {
         const {host, port, auth } = transportOpts;
@@ -41,9 +42,9 @@ function init(conf) {
 
 function send({ from, to, message, ...otherArgs }) {
     return new Promise((resolve, reject) => {
-        const { username, email, footer } = config
+        const { username, email, footer } = emailConfig
 
-        from = from || `"${username}"${email}`;
+        from = from || `"${username}" ${email}`;
         footer && (message += footer);
 
         let mailOptions = {
@@ -67,10 +68,11 @@ function send({ from, to, message, ...otherArgs }) {
 }
 
 
-module.exports = (config) => {
-    if (config || !transporter) init(config);
-
+function init(config){
+    if (config || !transporter) setConfiguration(config);
     return {
         send,
     }
-};
+}
+
+module.exports = init;

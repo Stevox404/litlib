@@ -22,26 +22,30 @@ describe('utils', () => {
     })
     
     it('Should create a proper ServerError object', () => {
-        let err = new ServerError('Error message', {status: 500, text: 'Status text'});
+        let err = new ServerError('Error message', {status: 400, text: 'Status text'});
         expect(err.name).to.be.equal('ServerError');
         expect(err.message).to.be.equal('Error message');
-        expect(err.status).to.be.equal(500);
+        expect(err.status).to.be.equal(400);
         expect(err.text).to.be.equal('Status text');
-        err = new ServerError({status: 500, text: 'Status text'});
-        expect(err.message).to.be.equal(err.text);
-        expect(err.status).to.be.equal(500);
-        expect(err.text).to.be.equal('Status text');
-        err = new ServerError('Error message', {status: 500});
+        err = new ServerError('Error message');
         expect(err.message).to.be.equal('Error message');
         expect(err.status).to.be.equal(500);
         expect(err.text).to.not.be.undefined;
-        err = new ServerError(500);
+        err = new ServerError({status: 400, text: 'Status text'});
         expect(err.message).to.be.equal(err.text);
-        expect(err.status).to.be.equal(500);
+        expect(err.status).to.be.equal(400);
+        expect(err.text).to.be.equal('Status text');
+        err = new ServerError('Error message', {status: 400});
+        expect(err.message).to.be.equal('Error message');
+        expect(err.status).to.be.equal(400);
         expect(err.text).to.not.be.undefined;
-        err = new ServerError(500, 'Error Text');
+        err = new ServerError(400);
         expect(err.message).to.be.equal(err.text);
-        expect(err.status).to.be.equal(500);
+        expect(err.status).to.be.equal(400);
+        expect(err.text).to.not.be.undefined;
+        err = new ServerError(400, 'Error Text');
+        expect(err.message).to.be.equal(err.text);
+        expect(err.status).to.be.equal(400);
         expect(err.text).to.be.equal('Error Text');
     });
 });

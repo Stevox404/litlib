@@ -11,8 +11,9 @@ EMAIL_NAME=name
 EMAIL_ADDRESS=name@email.com
 EMAIL_PASSWORD=pass
 EMAIL_HOST=smtp.host.email
+EMAIL_SERVICE=Gmail
 EMAIL_PORT=587
---------------------------------------------------------------
+-----------------
 
 
 --- filestore.s3 ---
