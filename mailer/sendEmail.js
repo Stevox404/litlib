@@ -56,8 +56,8 @@ function send({ from, to, message, ...otherArgs }) {
 
         transporter.sendMail(mailOptions, function (err, info) {
             if (err) {
-                reject((`Mail sending to ${recipient} failed due to Error`, err));
-                console.err("Sent Fail.", err);
+                reject((`Mail sending to ${to} failed due to Error`, err));
+                console.error("Sent Fail.", err);
             } else {
                 console.log("Sent")
                 resolve("Message sent: %s", info.response);

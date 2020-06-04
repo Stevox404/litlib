@@ -23,6 +23,7 @@ function init(config){
     }
 
     aws.config.region = region;
+    s3Config = config;
     s3Config.url = `https://${bucket}.s3.amazonaws.com`;
 
 
