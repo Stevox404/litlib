@@ -3,31 +3,62 @@ const ServerError = require('./ServerError');
 
 
 let loggingManaged = false;
-function manageLogs() {
-    if (loggingManaged) return;
-
+/**
+ * Set whether to display logs printed by the console.
+ * Level 1 - Display error only.
+ * Level 2 - Display warn and lower.
+ * Level 3 - Display info and lower.
+ * Level 4 - Display log and lower.
+ * Level 5 - Display debug and lower.
+ * Level 6 - Display trace and lower.
+ * @param {Opts} opts 
+ * @typedef Opts
+ * @property {1|2|3|4|5|6} level - Verbosity logging level. Defaults to env VERBOSITY or 6
+ * @property {string} include - Display regardless of level. Comma separated string.
+ * Defaults to env VERBOSITY_INCLUDE
+ * @property {string} exclude - Do not display regardless of level. Comma separated string.
+ * Defaults to env VERBOSITY_EXCLUDE
+ */
+function manageLogs(opts) {
+    if (loggingManaged && !opts) return;
     loggingManaged = true;
-    const VERBOSITY = process.env.VERBOSITY;
-    const VERBOSITY_TEXT = process.env.VERBOSITY_TEXT;
+
+    const lvl = process.env.VERBOSITY;
+    const inc = process.env.VERBOSITY_INCLUDE;
+    const exc = process.env.VERBOSITY_EXCLUDE;
+
+    opts = opts || {};
+    const level = opts.level || lvl;
+    const include = opts.include || inc;
+    const exclude = opts.exclude || exc;
+
 
     const showing = [];
     const shouldShow = {}
 
-    if (VERBOSITY >= 1 || /error/.test(VERBOSITY_TEXT)) {
+    if (level >= 1 || /error/.test(include) && !/error/.test(exclude)) {
         showing.push('errors');
         shouldShow.error = true;
     }
-    if (VERBOSITY >= 2 || /warn/.test(VERBOSITY_TEXT)) {
+    if (level >= 2 || /warn/.test(include) && !/warn/.test(exclude)) {
         showing.push('warnings');
         shouldShow.warn = true;
     }
-    if (VERBOSITY >= 3 || /info/.test(VERBOSITY_TEXT)) {
+    if (level >= 3 || /info/.test(include) && !/info/.test(exclude)) {
         showing.push('info');
         shouldShow.info = true;
     }
-    if (VERBOSITY >= 4 || /log/.test(VERBOSITY_TEXT)) {
+    if (level >= 4 || /log/.test(include) && !/log/.test(exclude)) {
         showing.push('logs');
         shouldShow.log = true;
+    }
+    if (level >= 5 || /debug/.test(include) && !/debug/.test(exclude)) {
+        showing.push('debug');
+        shouldShow.debug = true;
+    }
+    if (level >= 6 || /trace/.test(include) && !/trace/.test(exclude)) {
+        showing.push('trace');
+        shouldShow.trace = true;
     }
     console.info(`Showing: [${showing.join(' | ')}]`);
 
@@ -56,6 +87,20 @@ function manageLogs() {
     console.log = (...msg) => {
         if (shouldShow.log) {
             log(...msg);
+        }
+    }
+
+    const debug = console.debug;
+    console.debug = (...msg) => {
+        if (shouldShow.debug) {
+            debug(...msg);
+        }
+    }
+
+    const trace = console.trace;
+    console.trace = (...msg) => {
+        if (shouldShow.trace) {
+            trace(...msg);
         }
     }
 }
@@ -105,20 +150,22 @@ function changeCase(val, { toSnake, reduceNullArrayElements = true } = {}) {
     return val;
 }
 
+/**
+ * Handle async express routes
+ * @param {import('express').Handler} fn
+ * @returns {import('express').Handler} async route handler
+ */
 function wrapAsync(fn) {
     return function (req, res, next) {
-        const promise = fn(req, res, next);
-        if (!promise || promise.constructor !== Promise) {
-            console.warn("Undefined or non-Promise object returned");
-            return promise;
-        }
-
-        const caller = res.locals.filename || getCaller();
-        promise.catch(err => {
+        try{
+            fn(req, res, next);    
+        } catch (err){
+            const caller = res.locals.filename || getCaller();
+            const currStack = err.stack;
             if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
-            err.stack += `    at ${caller}\n`;
+            err.stack = currStack + `    at ${caller}\n`;
             next(err);
-        });
+        }
     }
 }
 

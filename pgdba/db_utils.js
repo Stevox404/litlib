@@ -6,7 +6,7 @@ const addComma = (len) => len > 1 ? ', ' : '';
  * @param {object} fields - An object of column_name:value pairs for the query
  * @param {object} condition - column_name:value pair for update condition.
  *   Only single condition currently supported. Add other conditions manually.
- * @returns {import('./index').statementObject} query
+ * @returns {QueryStatement} Generated query
  */
 function createUpdateStatement(table, fields, condition){
 	let query = {
@@ -38,11 +38,11 @@ function createUpdateStatement(table, fields, condition){
 }
 
 
+
 /**
- * @type {function}
  * @param {string} table - Table to be updated
  * @param {object} fields - An object of column_name:value pairs for the query
- * @returns {import('./index').statementObject} query
+ * @returns {QueryStatement} Generated query
  */
 function createInsertStatement(table, fields){
 	let query = {
@@ -77,3 +77,9 @@ module.exports = {
 	createUpdateStatement,
 	createInsertStatement
 };
+
+
+
+/**
+ * @typedef {import('pg').QueryConfig} QueryStatement 
+ */

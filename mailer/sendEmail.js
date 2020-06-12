@@ -1,50 +1,60 @@
 const nodemailer = require('nodemailer');
 
 let emailConfig, transporter;
-function setConfiguration(config) {
-    if(!config){
-        require('dotenv').config();
 
-        config = {
-            username: process.env.EMAIL_NAME,
-            email: process.env.EMAIL_ADDRESS,
-            footer: '',
-            transportOpts: {
-                host: process.env.EMAIL_HOST,
-                port: process.env.EMAIL_PORT,
-                service: process.env.EMAIL_SERVICE,
-                auth: {
-                    user: process.env.EMAIL_ADDRESS,
-                    pass: process.env.EMAIL_PASSWORD,
-                },
+/**
+ * @param {ConfigObject} config 
+ */
+function setConfiguration(config) {
+    require('dotenv').config();
+
+    const baseConfig = {
+        username: process.env.EMAIL_NAME,
+        email: process.env.EMAIL_ADDRESS,
+        footer: '',
+        transportOpts: {
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            service: process.env.EMAIL_SERVICE,
+            auth: {
+                user: process.env.EMAIL_ADDRESS,
+                pass: process.env.EMAIL_PASSWORD,
             },
-        }
+        },
     }
 
-    if(!config.transportOpts.tls) {
+    config = { ...baseConfig, ...(config || {}) };
+
+    if (!config.transportOpts.tls) {
         config.transportOpts.tls = {
             rejectUnauthorized: false
         }
     }
-    
+
     validateConfig(config);
     emailConfig = config;
 
     function validateConfig({ transportOpts }) {
-        const {host, port, auth, service } = transportOpts;
+        const { host, port, auth, service } = transportOpts;
 
-        if((!service && (!host || !port)) || !auth.user || !auth.pass ){
+        if ((!service && (!host || !port)) || !auth.user || !auth.pass) {
             throw new Error('mailer.email configuration invalid');
         }
         transporter = nodemailer.createTransport(transportOpts);
     }
 }
 
+
+/**
+ * Send email message
+ * @param {import('nodemailer/lib/mailer').Options} opts 
+ */
 function send({ from, to, message, ...otherArgs }) {
     return new Promise((resolve, reject) => {
         const { username, email, footer } = emailConfig
 
-        from = from || `"${username}" ${email}`;
+        const uName = username ? `"${username}" ` : '';
+        from = from || `${uName}${email}`;
         footer && (message += footer);
 
         let mailOptions = {
@@ -56,11 +66,10 @@ function send({ from, to, message, ...otherArgs }) {
 
         transporter.sendMail(mailOptions, function (err, info) {
             if (err) {
-                reject((`Mail sending to ${to} failed due to Error`, err));
-                console.error("Sent Fail.", err);
+                err.to = to;
+                reject(err);
             } else {
-                console.log("Sent")
-                resolve("Message sent: %s", info.response);
+                resolve(info);
             }
 
         });
@@ -68,7 +77,16 @@ function send({ from, to, message, ...otherArgs }) {
 }
 
 
-function init(config){
+
+/**
+ * Initialize Email object.
+ * Optional config object may be passed, 
+ * otherwise uses already initialized Email object.
+ * If none already exists, it is initalized using env variables 
+ * (See env.sample)
+ * @param {ConfigObject=} config 
+ */
+function init(config) {
     if (config || !transporter) setConfiguration(config);
     return {
         send,
@@ -76,3 +94,13 @@ function init(config){
 }
 
 module.exports = init;
+
+
+
+/**
+ * @typedef ConfigObject
+ * @property {string} username - defaults to env EMAIL_NAME
+ * @property {string} email - defaults to env EMAIL_ADDRESS
+ * @property {string} footer - HTML/Text to be appended to every email
+ * @property {import('nodemailer/lib/smtp-transport')} transportOpts 
+ */

@@ -49,6 +49,7 @@ function ServerError(...args) {
 }
 ServerError.prototype = Error.prototype;
 
+
 const codes = {
     "100": "Continue",
     "101": "Switching Protocols",

@@ -4,106 +4,108 @@ let includeResArray = false; // TODO
 
 
 /**
- * @type Pool A pg Pool object
+ * @type {Pool} A pg Pool object
  */
 let pool;
-function init(config){
-	if (!config) {
-        require('dotenv').config();
 
-        if (process.env.DATABASE_URL) {
-            //Heroku
-            const params = url.parse(process.env.DATABASE_URL);
-            const auth = params.auth.split(':');
-        
-            config = {
-                user: auth[0],
-                password: auth[1],
-                host: params.hostname,
-                port: params.port,
-                database: params.pathname.split('/')[1],
-                ssl: { rejectUnauthorized: false }
-            };
-        } else {
-            config = {
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                max: process.env.MAX_POOL || 20,
-                idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS || 60000,
-                port: process.env.DB_PORT || 5432,
-                host: process.env.DB_HOST || 'localhost',
-                database: process.env.DB_DATABASE,
-                ssl: { rejectUnauthorized: false }
-            }
-        
-            if (process.env.NODE_ENV === 'test' && process.env.DB_DATABASE_TEST){
-                config.database = process.env.DB_DATABASE_TEST;
-            }
+/** 
+ * @param {import "pg".PoolConfig=} config 
+ */
+function init(config) {
+    require('dotenv').config();
+
+    let baseConfig = {
+        max: 20,
+        idleTimeoutMillis: 60000,
+        port: 5432,
+        host: 'localhost',
+    };
+
+    if (process.env.DATABASE_URL) {
+        //Heroku
+        const params = url.parse(process.env.DATABASE_URL);
+        const auth = params.auth.split(':');
+
+        baseConfig = {
+            user: auth[0],
+            password: auth[1],
+            host: params.hostname,
+            port: params.port,
+            database: params.pathname.split('/')[1],
+            ssl: { rejectUnauthorized: false }
+        };
+    } else {
+        baseConfig = {
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            max: process.env.MAX_POOL || 20,
+            idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS || 60000,
+            port: process.env.DB_PORT || 5432,
+            host: process.env.DB_HOST || 'localhost',
+            database: process.env.DB_DATABASE,
+            ssl: { rejectUnauthorized: false }
+        }
+
+        if (process.env.NODE_ENV === 'test' && process.env.DB_DATABASE_TEST) {
+            baseConfig.database = process.env.DB_DATABASE_TEST;
         }
     }
-    
-    validateConfig(config);
-    
-    pool = new Pool(config);
-	return;
-	
-	
-	
-	function validateConfig(config){
-        config = { // default values
-            max: 20,
-            idleTimeoutMillis: 60000,
-            port: 5432,
-            host: 'localhost',
-            ...config
-        }
-		if (!(config.user && config.password && config.database)) {
-			throw new Error(`Please pass a proper config file or set up the .env file with proper keys`);
-		}
-	}
-}
 
+    config = { ...baseConfig, ...(config || {}) };
+
+    validateConfig(config);
+
+    pool = new Pool(config);
+    return;
+
+
+
+    function validateConfig(config) {
+        if (!(config.user && config.password && config.database)) {
+            throw new Error(`Please pass a proper config file or set up the .env file with proper keys`);
+        }
+    }
+}
 
 
 
 
 /**
  * Handles a database query.
- * @param {statement|statement[]} statement - Query to be executed.
+  * @param {QueryStatement|QueryStatement[]} statement - Query to be executed.
  *   If an array, performs a transaction.
- * @param {requestCallback} cb - Called after completion (or failure) of db operation.
- *   Optionally ommited to return a Promise.
+ * @param {QueryCallback=} cb - Called after completion (or failure) of db operation. Optionally ommited to return a Promise.
  */
-function query(statement, cb){
-    if(!pool) init();
-	if(Array.isArray(statement)){
-		return db_transaction(statement, cb);
-	}
-	return db_query(statement);
+function query(statement, cb) {
+    if (!pool) init();
+    if (Array.isArray(statement)) {
+        return db_transaction(statement, cb);
+    }
+    return db_query(statement);
 }
-
 
 
 
 /**
  * Handles a single database query.
- * @param {statement} statement - Query to be executed.
- * @param {requestCallback} cb - Called after completion (or failure) of db operation.
+ * @param {QueryStatement} statement - Query to be executed.
+ * @param {QueryCallback=} cb - Called after completion (or failure) of db operation.
  *   Optionally ommited to return a Promise.
+ * @private
  */
-
 function db_query(statement, cb) {
     return pool.query(statement, cb);
 }
 
 
 /**
-* [PRIVATE] Handles a single database transaction query.
-* @param {statement} statement - Query to be executed.
-* @param {object} client - Client executing the transaction.
-* @param {requestCallback} cb - Called after completion (or failure) of db operation.
-*   Optionally omitted to return a Promise
-*/
+ * Handles a single database transaction query.
+ * @param {import('pg').QueryConfig} statement - Query to be executed.
+ * @param {import('pg').PoolClient} client - Client executing the transaction.
+ * @param {QueryCallback} cb - Called after completion (or failure) of db operation.
+ *   Optionally omitted to return a Promise
+ * @private
+ */
 function _db_transaction_query(statement, client) {
     return client.query(statement);
 }
@@ -111,8 +113,8 @@ function _db_transaction_query(statement, client) {
 
 /**
  * Handles a database transaction
- * @param {statement[]} statements - List of queries to be executed.
- * @param {requestCallback} cb - Called after completion (or failure) of db operation.
+ * @param {QueryStatement[]} statements - List of queries to be executed.
+ * @param {QueryCallback=} cb - Called after completion (or failure) of db operation.
  *   Optionally omitted to return a Promise.
  */
 function db_transaction(statements, cb) {
@@ -182,7 +184,7 @@ function db_transaction(statements, cb) {
                 done(err);
             });
 
-            
+
 			/**
 			 * Queries that depend on a value from the previous query will use the placeholder '#key#'
 			 * Where 'key' is the column name of the required value eg. #user_id#.
@@ -218,14 +220,19 @@ function db_transaction(statements, cb) {
 
 
 /**
- * @returns {databaseObject}
+ * Initialize PG object.
+ * Optional config object may be passed, 
+ * otherwise uses already initialized PG object.
+ * If none already exists, it is initalized using env variables 
+ * (See env.sample)
+ * @param {import "pg".PoolConfig=} config 
  */
-function getDb(config){
-    if(config || !pool){
+function getDb(config) {
+    if (config || !pool) {
         /* TODO Manage multiple dbs */
         init(config);
     }
-    
+
     return {
         query, pool,
         ...(require('./db_utils')),
@@ -233,37 +240,13 @@ function getDb(config){
 }
 
 
- module.exports = getDb;
-
-
-
-
-
-
+module.exports = getDb;
 
 /**
- * Database Query Statement
- * @typedef {(string|statementObject)} statement
+ * @typedef {import('pg').QueryConfig} QueryStatement 
  */
 /**
- * Database Query Statement object
- * @typedef {Object} statementObject
- * @property {string} text - A prepared statement query, args represented as ${num}
- * @property {any[]} values - Array of values for the query
- */
-/**
- * Database operation callback
- * @callback requestCallback
- * @param {object} err
- * @param {object[]} results
- */
-
-/**
- * Database object
- * @typedef {Object} databaseObject
- * @property {query} query - Used to execute a query on the database
- * @property {import('./db_utils').createInsertStatement} createInsertStatement
-    - Creates dynamic insert statements to query the database
- * @property {import('./db_utils').createUpdateStatement} createUpdateStatement
- * - Creates dynamic update statements to query the database
+ * @callback QueryCallback
+ * @param {Error} err
+ * @param {import('pg').QueryArrayResult} result
  */

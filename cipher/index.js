@@ -3,7 +3,7 @@ const crypto = require('crypto');
 /**
  * Hash data using sha256 algorithm.
  *
- * @param {string} text
+ * @param {string} text - Text to hash
  * @param {string} salt
  * @returns hashed string.
  */
@@ -33,8 +33,8 @@ function generateSalt(){
  * Generate key for data encryption.
  *
  * @param {string} password
- * @param {string} [salt='salt']
- * @param {number} [length=24]
+ * @param {string='salt'} salt
+ * @param {number=24} length
  */
 function generateKey(password, salt='salt', length = 24){
     return new Promise((resolve, reject) => {
@@ -49,10 +49,8 @@ function generateKey(password, salt='salt', length = 24){
 }
 
 
-
 /**
  * Encrypt Data
- *
  * @param {string} data
  * @param {Buffer} key
  */

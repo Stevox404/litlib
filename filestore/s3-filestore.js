@@ -3,22 +3,29 @@ aws.config.region = 'us-east-1';
 const s3 = new aws.S3();
 const fsPromises = require('fs').promises;
 
+/**
+ * @type {ConfigObject}
+ */
 let s3Config;
 
 
 
-function init(config){
-    if(!config){
-        require('dotenv').config();
-        config = {
-            bucket: process.env.S3_BUCKET,
-            region: process.env.S3_REGION || 'us-east-1',
-        }
+
+/**
+ * @param {ConfigObject} config 
+ */
+function init(config) {
+    require('dotenv').config();
+    baseConfig = {
+        bucket: process.env.S3_BUCKET,
+        region: process.env.S3_REGION || 'us-east-1',
     }
-    
+    config = { ...baseConfig, ...(config || {}) };
+
+
     const { bucket, region } = config;
-    
-    if(!bucket){
+
+    if (!bucket) {
         throw new Error('Please set the S3_BUCKET env variable');
     }
 
@@ -29,9 +36,14 @@ function init(config){
 
 }
 
+
+/**
+ * Get file in S3 Bucket 
+ * @param {string} filepath - path to object in Bucket
+ */
 const getFile = (filepath) => {
-    if(!filepath) return null;
-    
+    if (!filepath) return null;
+
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             const params = {
@@ -107,42 +119,54 @@ function getMIME(filepath) {
 }
 
 
-const saveFile = (filepath, file) => {
-    if(!filepath || !file) return null;
-    
+/**
+ * Save file to S3
+ * @param {string} filepath - path to save object in bucket
+ * @param {{path: string}} file - File to be read. 
+ *  Can pass "path" property for fs path or actual data.
+ */
+const saveFile = async (filepath, file) => {
+    if (!filepath || !file) return null;
+    const data = file.path ? await fsPromises.readFile(file.path) : file;
+    filepath = String(filepath).replace(/^\//, '')
+
+    const params = {
+        Bucket: s3Config.bucket,
+        Key: filepath,
+        Body: data,
+        ACL: 'public-read',
+        ContentDisposition: 'inline',
+    };
+
+    const mime = getMIME(filepath);
+    if (mime) {
+        params.ContentType = mime;
+    }
+
+
+    s3.putObject(params, (err) => {
+        if (err) {
+            err = new Error('Error in saving file: ' + filepath + ' in bucket. Error: ' + err);
+            return reject(err);
+        }
+        resolve(`${s3Config.url}/${filepath}`)
+    });
+
     return Promise.resolve().then(() =>
         new Promise(async (resolve, reject) => {
-            const data = file.path ? await fsPromises.readFile(file.path) : file;
-
-            const params = {
-                Bucket: s3Config.bucket,
-                Key: filepath,
-                Body: data,
-                ACL: 'public-read',
-                ContentDisposition: 'inline',
-            };
-
-            const mime = getMIME(filepath);
-            if (mime) {
-                params.ContentType = mime;
-            }
-
-
-            s3.putObject(params, (err) => {
-                if (err) {
-                    err = new Error('Error in saving file: ' + filepath + ' in bucket. Error: ' + err);
-                    return reject(err);
-                }
-                resolve(`${s3Config.url}/${filepath}`)
-            });
 
         })
     );
 };
 
+
+/**
+ * Delete object in S3 bucket
+ * @param {string} filepath - path to object in Bucket
+ */
 const deleteFile = (filepath) => {
-    if(!filepath) return null;
-    
+    if (!filepath) return null;
+
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             // Check if fully qualified filepath
@@ -165,11 +189,33 @@ const deleteFile = (filepath) => {
 };
 
 
+/**
+ * Initialize S3 object.
+ * Optional config object may be passed, 
+ * otherwise uses already initialized S3 object.
+ * If none already exists, it is initalized using env variables 
+ * (See env.sample)
+ * @param {ConfigObject=} config 
+ */
 module.exports = (config) => {
-    if(config || !s3Config) init(config);
-    
+    if (config || !s3Config) init(config);
+
     return {
-        getFile, saveFile, deleteFile, 
-        url: s3Config.url, path: s3Config.url,
+        getFile, saveFile, deleteFile,
+        /**@type {S3Url} */
+        url: s3Config.url, 
+        /**@type {S3Url} */
+        path: s3Config.url,
     }
 }
+
+
+
+
+/**@typedef {string} S3Url - Base url to access bucket */
+/**
+ * @typedef ConfigObject
+ * @property {string} bucket - Name of S3 bucket to use
+ * @property {string} region - AWS S3 bucket instance region
+ * @property {string} region - AWS S3 bucket instance region
+ */
