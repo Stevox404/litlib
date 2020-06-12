@@ -206,6 +206,7 @@ module.exports = (config) => {
         url: s3Config.url, 
         /**@type {S3Url} */
         path: s3Config.url,
+        s3
     }
 }
 

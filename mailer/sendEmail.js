@@ -1,6 +1,8 @@
 const nodemailer = require('nodemailer');
 
-let emailConfig, transporter;
+let emailConfig;
+/** @type {import('nodemailer').Transporter} */
+let transporter;
 
 /**
  * @param {ConfigObject} config 
