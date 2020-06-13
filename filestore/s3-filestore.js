@@ -125,38 +125,34 @@ function getMIME(filepath) {
  * @param {{path: string}} file - File to be read. 
  *  Can pass "path" property for fs path or actual data.
  */
-const saveFile = async (filepath, file) => {
-    if (!filepath || !file) return null;
-    const data = file.path ? await fsPromises.readFile(file.path) : file;
-    filepath = String(filepath).replace(/^\//, '')
+const saveFile = (filepath, file) => {
+    return new Promise(async (resolve, reject) => {
+        if (!filepath || !file) return null;
+        const data = file.path ? await fsPromises.readFile(file.path) : file;
+        filepath = String(filepath).replace(/^\//, '')
 
-    const params = {
-        Bucket: s3Config.bucket,
-        Key: filepath,
-        Body: data,
-        ACL: 'public-read',
-        ContentDisposition: 'inline',
-    };
+        const params = {
+            Bucket: s3Config.bucket,
+            Key: filepath,
+            Body: data,
+            ACL: 'public-read',
+            ContentDisposition: 'inline',
+        };
 
-    const mime = getMIME(filepath);
-    if (mime) {
-        params.ContentType = mime;
-    }
-
-
-    s3.putObject(params, (err) => {
-        if (err) {
-            err = new Error('Error in saving file: ' + filepath + ' in bucket. Error: ' + err);
-            return reject(err);
+        const mime = getMIME(filepath);
+        if (mime) {
+            params.ContentType = mime;
         }
-        resolve(`${s3Config.url}/${filepath}`)
-    });
 
-    return Promise.resolve().then(() =>
-        new Promise(async (resolve, reject) => {
 
-        })
-    );
+        s3.putObject(params, (err) => {
+            if (err) {
+                console.error('Error in saving file: ' + filepath + ' in bucket.');
+                reject(err);
+            }
+            resolve(`${s3Config.url}/${filepath}`);
+        });
+    })
 };
 
 
@@ -170,12 +166,9 @@ const deleteFile = (filepath) => {
     return Promise.resolve().then(() =>
         new Promise((resolve, reject) => {
             // Check if fully qualified filepath
-            const regex = RegExp(`${s3Config.url}/(.+)`);
-            const m = filepath.match(regex);
-            if (m && m[1]) {
-                filepath = m[1];
-            }
-
+            const regex = RegExp(`^${s3Config.url}/`);
+            filepath = filepath.replace(regex, '');
+            
             const params = {
                 Bucket: s3Config.bucket,
                 Key: filepath,
@@ -203,7 +196,7 @@ module.exports = (config) => {
     return {
         getFile, saveFile, deleteFile,
         /**@type {S3Url} */
-        url: s3Config.url, 
+        url: s3Config.url,
         /**@type {S3Url} */
         path: s3Config.url,
         s3

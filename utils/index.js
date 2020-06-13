@@ -7,23 +7,27 @@ let loggingManaged = false;
  * Set whether to display logs printed by the console.
  * Level 1 - Display error only.
  * Level 2 - Display warn and lower.
- * Level 3 - Display info and lower.
+ * Level 3 - Display info and lower (The default in production env).
  * Level 4 - Display log and lower.
  * Level 5 - Display debug and lower.
- * Level 6 - Display trace and lower.
+ * Level 6 - Display trace and lower (The default in other env).
  * @param {Opts} opts 
  * @typedef Opts
- * @property {1|2|3|4|5|6} level - Verbosity logging level. Defaults to env VERBOSITY or 6
+ * @property {1|2|3|4|5|6} level - Verbosity logging level -- env VERBOSITY.
  * @property {string} include - Display regardless of level. Comma separated string.
- * Defaults to env VERBOSITY_INCLUDE
+ * -- env VERBOSITY_INCLUDE
  * @property {string} exclude - Do not display regardless of level. Comma separated string.
- * Defaults to env VERBOSITY_EXCLUDE
+ * -- env VERBOSITY_EXCLUDE
  */
 function manageLogs(opts) {
     if (loggingManaged && !opts) return;
     loggingManaged = true;
+    let lvl = 6;
+    if(process.env.NODE_ENV === 'production'){
+        lvl = 3;
+    }
 
-    const lvl = process.env.VERBOSITY;
+    lvl = process.env.VERBOSITY;
     const inc = process.env.VERBOSITY_INCLUDE;
     const exc = process.env.VERBOSITY_EXCLUDE;
 
@@ -157,41 +161,13 @@ function changeCase(val, { toSnake, reduceNullArrayElements = true } = {}) {
  */
 function wrapAsync(fn) {
     return function (req, res, next) {
-        try{
-            fn(req, res, next);    
-        } catch (err){
-            const caller = res.locals.filename || getCaller();
-            const currStack = err.stack;
+        Promise.resolve(fn(req, res, next)).catch(err => {
             if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
-            err.stack = currStack + `    at ${caller}\n`;
             next(err);
-        }
+        });
     }
 }
 
-function getCaller() {
-    const ogPrepStack = Error.prepareStackTrace;
-    Error.prepareStackTrace = function (_, stack) {
-        return stack
-    }
-    const err = new Error();
-    const { stack } = err;
-    Error.prepareStackTrace = ogPrepStack;
-    let callerFile;
-    currFile = stack[0].getFileName();
-    for(let i = 1; i < stack.length; i++){
-        callerFile = stack[i].getFileName();
-        const path = require('path');
-        if(
-            callerFile !== currFile && 
-            path.isAbsolute(callerFile) && 
-            !/node_modules/.test(callerFile)
-        ){
-            break;
-        }
-    }
-    return callerFile;
-}
 
 module.exports = {
     manageLogs, ServerError, snakeToCamelCase, camelToSnakeCase,

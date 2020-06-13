@@ -1,5 +1,3 @@
-const { EOL } = require('os');
-
 /**
  * @typedef {(message: string, status: number, text: string)} args1
  * @typedef {(status: number, text: string)} args2
@@ -45,7 +43,8 @@ function ServerError(...args) {
     this.message = message;
     this.status = status || 500;
     this.text = text;
-    this.stack = `Error${EOL}`;
+    var temp = Error.apply(this, arguments);
+    this.stack = temp.stack;
 }
 ServerError.prototype = Error.prototype;
 
