@@ -9,7 +9,7 @@ let includeResArray = false; // TODO
 let pool;
 
 /** 
- * @param {import "pg".PoolConfig=} config 
+ * @param {import("pg").PoolConfig=} config 
  */
 function init(config) {
     require('dotenv').config();
@@ -72,7 +72,7 @@ function init(config) {
 
 /**
  * Handles a database query.
-  * @param {QueryStatement|QueryStatement[]} statement - Query to be executed.
+ * @param {QueryStatement|QueryStatement[]} statement - Query to be executed.
  *   If an array, performs a transaction.
  * @param {QueryCallback=} cb - Called after completion (or failure) of db operation. Optionally ommited to return a Promise.
  */
@@ -218,14 +218,20 @@ function db_transaction(statements, cb) {
 }
 
 
-
+const {createInsertStatement, createUpdateStatement} = require('./db_utils');
 /**
  * Initialize PG object.
  * Optional config object may be passed, 
  * otherwise uses already initialized PG object.
  * If none already exists, it is initalized using env variables 
  * (See env.sample)
- * @param {import "pg".PoolConfig=} config 
+ * @param {import("pg").PoolConfig=} config
+ * @returns {{
+ *  query: query,
+ *  pool: pool,
+ *  createUpdateStatement: createUpdateStatement,
+ *  createInsertStatement: createInsertStatement,
+ * }}
  */
 function getDb(config) {
     if (config || !pool) {
