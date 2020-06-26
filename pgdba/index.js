@@ -241,7 +241,8 @@ function getDb(config) {
 
     return {
         query, pool,
-        ...(require('./db_utils')),
+        createInsertStatement, 
+        createUpdateStatement
     }
 }
 
