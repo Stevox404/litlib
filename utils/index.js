@@ -27,7 +27,7 @@ function manageLogs(opts) {
         lvl = 3;
     }
 
-    lvl = process.env.VERBOSITY;
+    lvl = process.env.VERBOSITY || lvl;
     const inc = process.env.VERBOSITY_INCLUDE;
     const exc = process.env.VERBOSITY_EXCLUDE;
 
