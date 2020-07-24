@@ -162,7 +162,6 @@ function changeCase(val, { toSnake, reduceNullArrayElements = true } = {}) {
 function wrapAsync(fn) {
     return function (req, res, next) {
         Promise.resolve(fn(req, res, next)).catch(err => {
-            if (!err.name || err.name !== 'ServerError') err = new ServerError(err);
             next(err);
         });
     }
