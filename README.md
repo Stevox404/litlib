@@ -13,8 +13,9 @@ Some crypto functions.
 1. __[mailer](https://github.com/Stevox404/litlib/tree/master/mailer)__:
 Send emails using nodemailer
 
-1. __[filestore](https://github.com/Stevox404/litlib/tree/master/filestore)__:
-Storage of files on s3
+1. __[lfs](https://github.com/Stevox404/litlib/tree/master/lfs)__:
+Litlib File Systems
+    * S3
 
 1. __[utils](https://github.com/Stevox404/litlib/tree/master/utils)__:
 Some other utility functions:
