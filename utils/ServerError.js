@@ -10,6 +10,7 @@
  *  and text (a corresponding HTTP status text or custom message)
  * @param  {args1|args2|args3} args - Constructor arguments (message, status, text)
  */
+// TODO add err stack
 function ServerError(...args) {
     let message, status, text;
 

@@ -14,9 +14,11 @@ module.exports.S3 = S3;
  */
 function S3(newConfig) {
     /**@type {{awsS3: AWS.S3}} */
-    let { awsS3, config } = initializedS3;
+    let awsS3, config;
     if (newConfig) {
         ({ awsS3, config } = init(newConfig));
+    } else {
+        ({ awsS3, config } = initializedS3);
     }
     if (!awsS3 || !config) {
         throw new Error('S3 not initialized');
@@ -118,13 +120,13 @@ S3.init = function (newConfig) {
 
 
 /**
- * @param {S3Config} config 
+ * @param {S3Config} newConfig 
  */
-function init(config) {
-    config = {
+function init(newConfig) {
+    const config = {
         bucket: process.env.S3_BUCKET,
         region: process.env.S3_REGION,
-        ...config,
+        ...newConfig,
     }
     if (!config.bucket) {
         throw new Error('Please set the S3_BUCKET');

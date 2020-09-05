@@ -1,5 +1,4 @@
-process.env.NODE_ENV = 'test';
-const { S3 } = require("../lfs");
+const { S3 } = require("../lfs/s3");
 const path = require('path');
 const { expect } = require("chai");
 

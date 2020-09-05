@@ -1,4 +1,3 @@
-process.env.NODE_ENV = 'test';
 const { expect } = require("chai");
 const { encrypt, generateKey, decrypt, generateSalt, hashText } = require("../cipher");
 

@@ -4,8 +4,9 @@ A little library of server utility functions
 
 
 Included utilities:
-1. __[pgdba](https://github.com/Stevox404/litlib/tree/master/pgdba)__:
-Postgresql Database Access. Wrapper over pg module.
+1. __[ldb](https://github.com/Stevox404/litlib/tree/master/pgdba)__:
+Database Wrappers.
+    * Db - Wrapper over pg-pool module.
 
 1. __[cipher](https://github.com/Stevox404/litlib/tree/master/cipher)__:
 Some crypto functions.
