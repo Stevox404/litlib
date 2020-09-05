@@ -1,4 +1,10 @@
+const { manageLogs } = require("../utils");
+
+process.env.NODE_ENV = 'test';
+process.env.VERBOSITY = 0;
+process.env.VERBOSITY_INCLUDE = 'debug';
 before(async () => {
-    process.env.NODE_ENV = 'test';
-})
+    console.info('Setting up tests');
+    manageLogs();
+});
 

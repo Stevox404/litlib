@@ -1,7 +1,7 @@
 const { Email } = require('../mailer');
 const { expect } = require('chai');
 
-describe.only('Mailer', function () {
+describe('Mailer', function () {
     this.timeout(5000);
     before(async () => {
         await Email.init();

@@ -10,9 +10,16 @@ Database Wrappers.
 
 1. __[cipher](https://github.com/Stevox404/litlib/tree/master/cipher)__:
 Some crypto functions.
+    * encrypt
+    * decrypt
+    * hashText
+    * generateSalt
+    * generateKey
+    * randomBytes
 
 1. __[mailer](https://github.com/Stevox404/litlib/tree/master/mailer)__:
-Send emails using nodemailer
+Mailing Classes.
+    * Email - Send emails using nodemailer
 
 1. __[lfs](https://github.com/Stevox404/litlib/tree/master/lfs)__:
 Litlib File Systems

@@ -16,7 +16,9 @@ describe('Cipher', () => {
 
     it('Should hash data', () => {
         const data = 'Sample String';
-        const hash = hashText(data);
+        let hash = hashText(data);
+        expect(hash).is.not.equal(data);
+        hash = hashText(data, generateSalt());
         expect(hash).is.not.equal(data);
     });
 })

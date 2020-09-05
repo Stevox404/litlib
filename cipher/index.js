@@ -39,11 +39,8 @@ function generateSalt(){
 function generateKey(password, salt='salt', length = 24){
     return new Promise((resolve, reject) => {
         crypto.scrypt(password, salt, length, (err, key) => {
-            if(err){
-                reject(err);
-            } else {
-                resolve(key);
-            }
+            if(err) return reject(err)
+            resolve(key);
         });
     });
 }

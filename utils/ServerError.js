@@ -12,21 +12,29 @@
  */
 // TODO add err stack
 function ServerError(...args) {
-    let message, status, text;
+    let message, status, text, err;
 
     const isStatusCode = code => /^\d{3}$/.test(code);
-    if (isStatusCode(args[0])) {
+    if (args[0] instanceof Error) {
+        err = args[0]
+    } else if (isStatusCode(args[0])) {
         status = args[0];
-        text = args[1];
-    } else if (typeof args[0] === "object" && isStatusCode(args[0].status)) {
-        ({ status, text } = args[0]);
+        if (args[1] instanceof Error) {
+            err = args[1]
+        } else {
+            text = args[1];
+            err = args[2]
+        }
+    } else if (typeof args[0] === "object") {
+        ({ status, text, err } = args[0]);
     } else {
         message = args[0];
         if (typeof args[1] === "object" && isStatusCode(args[1].status)) {
-            ({ status, text } = args[1]);
+            ({ status, text, err } = args[1]);
         } else {
             status = args[1];
             text = args[2];
+            err = args[3]
         }
     }
 
@@ -44,8 +52,13 @@ function ServerError(...args) {
     this.message = message;
     this.status = status || 500;
     this.text = text;
-    var temp = Error.apply(this, arguments);
-    this.stack = temp.stack;
+    if (err && err instanceof Error) {
+        this.stack = err.stack;
+        this.message = err.message;
+    } else {
+        var temp = Error.apply(this, arguments);
+        this.stack = temp.stack;
+    }
 }
 ServerError.prototype = Error.prototype;
 

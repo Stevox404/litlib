@@ -15,7 +15,7 @@ function Db(newConfig) {
     let pool, config;
     if (newConfig) {
         ({ pool, config } = init(newConfig));
-    } else {
+    } else if (initializedDB) {
         ({ pool, config } = initializedDB);
     }
     if (!pool || !config) {
@@ -75,6 +75,7 @@ function Db(newConfig) {
         }
 
         await client.query('COMMIT');
+        return results;
 
 
         /**
@@ -86,14 +87,15 @@ function Db(newConfig) {
          * @param {string} queryText - Query with placeholders
          */
         function formatStatement(queryText) {
-            let formatted = queryText.replace(/\s#(.+?)#\s/g, (_, key) => {
-                return deepSearchKeyValue(key.toLowerCase());
+            let formatted = queryText.replace(/\s#(.+?)#(?!\w)/g, (_, key) => {
+                return `'${deepSearchKeyValue(key.toLowerCase())}'`;
             });
             return formatted;
 
             function deepSearchKeyValue(key) {
                 for (let l = results.length, i = l - 1; i > -1; i--) {
                     const { rows } = results[i];
+                    if(!rows.length) continue;
                     const idx = rows.length - 1
                     const val = rows[idx][key]; // Picks val from last result row
                     if (val !== undefined) {
@@ -108,9 +110,12 @@ function Db(newConfig) {
 
 }
 
-
 Db.init = function (newConfig) {
     initializedDB = init(newConfig);
+}
+
+Db.reset = function () {
+    initializedDB = undefined;
 }
 
 
@@ -150,7 +155,7 @@ function init(newConfig = {}) {
         }
     }
     if (process.env.NODE_ENV === 'test' && process.env.DB_DATABASE_TEST) {
-        baseConfig.database = process.env.DB_DATABASE_TEST;
+        config.database = process.env.DB_DATABASE_TEST;
     }
 
     config = { 
@@ -161,8 +166,9 @@ function init(newConfig = {}) {
 
     delete config.extendConfig;
 
+    // console.log(config);
     if (!config.user || !config.password || !config.database) {
-        throw new Error(`Database improperly configured.`);
+        throw new Error(`Database improperly configured`);
     }
 
     const pool = new Pool(config);

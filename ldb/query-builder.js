@@ -30,7 +30,7 @@ function createInsertStatement(table, fields = {}) {
         return query;
     } else {
         //No changes to be made
-        return;
+        return null;
     }
 }
 
@@ -45,7 +45,7 @@ module.exports.createUpdateStatement = createUpdateStatement;
  *   Only single condition currently supported. Add other conditions manually.
  * @returns {{text:string, values: Array}} Generated query
  */
-function createUpdateStatement(table, fields, condition) {
+function createUpdateStatement(table, fields = {}, condition) {
     let query = {
         text: `UPDATE ${table} SET`,
         values: []
@@ -75,15 +75,15 @@ function createUpdateStatement(table, fields, condition) {
                 const _op = '=', _lop = 'AND';
                 if (!cond.field && !cond.value) {
                     const keys = Object.keys(cond);
-                    if (keys.length > 1) {
-                        console.warn(`Query condition objects should have "field" and "value" properties`);
-                    }
                     let field;
                     for (let key of keys) {
                         // Field is the first key without an underscore
                         if (/^_/.test(keys)) continue;
                         field = key;
                         break;
+                    }
+                    if (keys.length > 1 && !field) {
+                        console.warn(`Query condition objects should have "field" and "value" properties`);
                     }
                     field = field || keys[0];
                     const value = cond[field];
@@ -96,7 +96,7 @@ function createUpdateStatement(table, fields, condition) {
         return query;
     } else {
         //No changes to be made
-        return;
+        return null;
     }
 }
 

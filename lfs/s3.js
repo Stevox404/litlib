@@ -17,7 +17,7 @@ function S3(newConfig) {
     let awsS3, config;
     if (newConfig) {
         ({ awsS3, config } = init(newConfig));
-    } else {
+    } else if (initializedS3) {
         ({ awsS3, config } = initializedS3);
     }
     if (!awsS3 || !config) {
@@ -116,6 +116,9 @@ function S3(newConfig) {
 S3.init = function (newConfig) {
     initializedS3 = init(newConfig);
 };
+S3.reset = function () {
+    initializedS3 = undefined;
+};
 
 
 
@@ -131,8 +134,8 @@ function init(newConfig = {}) {
     }
     delete config.extendConfig;
     
-    if (!config.bucket) {
-        throw new Error('Please set the S3_BUCKET');
+    if (!config.bucket || !config.region) {
+        throw new Error('Requires region and bucket for initialization');
     }
     config.url = `https://${config.bucket}.s3.amazonaws.com`;
     const awsS3 = new aws.S3();
@@ -148,52 +151,53 @@ function getMIME(filepath) {
         return null;
     }
     const ext = /\.(\w+)$/.exec(filepath)[1].toLowerCase();
-    switch (ext) {
-        case 'jpg':
-        case 'jpeg': return 'image/jpeg';
-        case 'png': return 'image/png';
-        case 'gif': return 'image/gif';
+    const mimes = {
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
 
-        case 'txt': return 'text/plain';
-        case 'pdf': return 'application/pdf';
+        'txt': 'text/plain',
+        'pdf': 'application/pdf',
 
-        case 'mp3': return 'audio/mpeg';
-        case 'mp4': return 'video/mpe4';
+        'mp3': 'audio/mpeg',
+        'mp4': 'video/mpe4',
 
-        case 'doc': return 'application/msword';
-        case 'dot': return 'application/msword';
+        'doc': 'application/msword',
+        'dot': 'application/msword',
 
-        case 'docx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        case 'dotx': return 'application/vnd.openxmlformats-officedocument.wordprocessingml.template';
-        case 'docm': return 'application/vnd.ms-word.document.macroEnabled.12';
-        case 'dotm': return 'application/vnd.ms-word.template.macroEnabled.12';
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'dotx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+        'docm': 'application/vnd.ms-word.document.macroEnabled.12',
+        'dotm': 'application/vnd.ms-word.template.macroEnabled.12',
 
-        case 'xls': return 'application/vnd.ms-excel';
-        case 'xlt': return 'application/vnd.ms-excel';
-        case 'xla': return 'application/vnd.ms-excel';
+        'xls': 'application/vnd.ms-excel',
+        'xlt': 'application/vnd.ms-excel',
+        'xla': 'application/vnd.ms-excel',
 
-        case 'xlsx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        case 'xltx': return 'application/vnd.openxmlformats-officedocument.spreadsheetml.template';
-        case 'xlsm': return 'application/vnd.ms-excel.sheet.macroEnabled.12';
-        case 'xltm': return 'application/vnd.ms-excel.template.macroEnabled.12';
-        case 'xlam': return 'application/vnd.ms-excel.addin.macroEnabled.12';
-        case 'xlsb': return 'application/vnd.ms-excel.sheet.binary.macroEnabled.12';
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'xltx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
+        'xlsm': 'application/vnd.ms-excel.sheet.macroEnabled.12',
+        'xltm': 'application/vnd.ms-excel.template.macroEnabled.12',
+        'xlam': 'application/vnd.ms-excel.addin.macroEnabled.12',
+        'xlsb': 'application/vnd.ms-excel.sheet.binary.macroEnabled.12',
 
-        case 'ppt': return 'application/vnd.ms-powerpoint';
-        case 'pot': return 'application/vnd.ms-powerpoint';
-        case 'pps': return 'application/vnd.ms-powerpoint';
-        case 'ppa': return 'application/vnd.ms-powerpoint';
+        'ppt': 'application/vnd.ms-powerpoint',
+        'pot': 'application/vnd.ms-powerpoint',
+        'pps': 'application/vnd.ms-powerpoint',
+        'ppa': 'application/vnd.ms-powerpoint',
 
-        case 'pptx': return 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-        case 'potx': return 'application/vnd.openxmlformats-officedocument.presentationml.template';
-        case 'ppsx': return 'application/vnd.openxmlformats-officedocument.presentationml.slideshow';
-        case 'ppam': return 'application/vnd.ms-powerpoint.addin.macroEnabled.12';
-        case 'pptm': return 'application/vnd.ms-powerpoint.presentation.macroEnabled.12';
-        case 'potm': return 'application/vnd.ms-powerpoint.template.macroEnabled.12';
-        case 'ppsm': return 'application/vnd.ms-powerpoint.slideshow.macroEnabled.12';
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'potx': 'application/vnd.openxmlformats-officedocument.presentationml.template',
+        'ppsx': 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+        'ppam': 'application/vnd.ms-powerpoint.addin.macroEnabled.12',
+        'pptm': 'application/vnd.ms-powerpoint.presentation.macroEnabled.12',
+        'potm': 'application/vnd.ms-powerpoint.template.macroEnabled.12',
+        'ppsm': 'application/vnd.ms-powerpoint.slideshow.macroEnabled.12',
 
-        case 'mdb': return 'application/vnd.ms-access';
+        'mdb': 'application/vnd.ms-access',
     }
+    return mimes[ext];
 }
 
 

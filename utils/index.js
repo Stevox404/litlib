@@ -2,7 +2,6 @@ require('dotenv').config();
 const ServerError = require('./ServerError');
 
 
-let loggingManaged = false;
 /**
  * Set whether to display logs printed by the console.
  * Level 1 - Display error only.
@@ -20,10 +19,8 @@ let loggingManaged = false;
  * -- env VERBOSITY_EXCLUDE
  */
 function manageLogs(opts) {
-    if (loggingManaged && !opts) return;
-    loggingManaged = true;
     let lvl = 6;
-    if(process.env.NODE_ENV === 'production'){
+    if (process.env.NODE_ENV === 'production') {
         lvl = 3;
     }
 
@@ -116,21 +113,17 @@ function snakeToCamelCase(val) {
 function camelToSnakeCase(val) {
     return changeCase(val, { toSnake: true });
 }
-function changeCase(val, { toSnake, reduceNullArrayElements = true } = {}) {
+function changeCase(val, { toSnake, } = {}) {
     if (!val) return val;
     if (Array.isArray(val)) {
-        if (reduceNullArrayElements) {
-            return val.reduce((acc, elm) => {
-                if (!elm) return acc;
-                if (typeof elm === 'object') {
-                    return [...acc, changeCase(elm, { toSnake })]
-                }
+        return val.reduce((acc, elm) => {
+            if (!elm) return acc;
+            if (typeof elm === 'object') {
+                return [...acc, changeCase(elm, { toSnake })]
+            }
 
-                return [...acc, elm]
-            }, []);
-        } else {
-            return val.map(elm => changeCase(elm, { toSnake }));
-        }
+            return [...acc, elm]
+        }, []);
     }
     if (val.constructor === Object) {
         const newObj = {}

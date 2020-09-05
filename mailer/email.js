@@ -13,7 +13,7 @@ module.exports.Email = Email;
  */
 function Email() {
     /** @type {import('nodemailer').Transporter} */
-    let { transporter, config } = initializedEmail;
+    let { transporter, config } = initializedEmail || {};
     if (!transporter || !config) {
         throw new Error('Email not initialized');
     }
