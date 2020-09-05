@@ -1,11 +1,7 @@
-const cipher = require('./cipher');
-const mailer = require('./mailer');
-const utils = require('./utils');
-
 module.exports = { 
     lfs: require('./lfs/s3'),
     ldb: require('./ldb'),
-    cipher, mailer, ...utils
+    mailer: require('./mailer'),
+    utils: require('./utils'),
+    cipher: require('./cipher'),
 }
-
-this.db.Db

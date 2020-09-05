@@ -122,12 +122,15 @@ S3.init = function (newConfig) {
 /**
  * @param {S3Config} newConfig 
  */
-function init(newConfig) {
+function init(newConfig = {}) {
     const config = {
         bucket: process.env.S3_BUCKET,
         region: process.env.S3_REGION,
+        ...(newConfig.extendConfig && initializedEmail.config),
         ...newConfig,
     }
+    delete config.extendConfig;
+    
     if (!config.bucket) {
         throw new Error('Please set the S3_BUCKET');
     }

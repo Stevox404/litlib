@@ -153,7 +153,13 @@ function init(newConfig = {}) {
         baseConfig.database = process.env.DB_DATABASE_TEST;
     }
 
-    config = { ...config, ...newConfig };
+    config = { 
+        ...config, 
+        ...(newConfig.extendConfig && initializedDB.config),
+        ...newConfig 
+    };
+
+    delete config.extendConfig;
 
     if (!config.user || !config.password || !config.database) {
         throw new Error(`Database improperly configured.`);

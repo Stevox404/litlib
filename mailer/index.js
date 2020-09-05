@@ -1,3 +1,3 @@
 module.exports = {
-    email: require('./sendEmail'),
+    ...require('./email'),
 }
