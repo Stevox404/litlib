@@ -15,7 +15,10 @@ function Db(newConfig) {
     let pool, config;
     if (newConfig) {
         ({ pool, config } = init(newConfig));
-    } else if (initializedDB) {
+    } else {
+        if (!initializedDB) {
+            initializedDB = init();
+        }
         ({ pool, config } = initializedDB);
     }
     if (!pool || !config) {
@@ -95,7 +98,7 @@ function Db(newConfig) {
             function deepSearchKeyValue(key) {
                 for (let l = results.length, i = l - 1; i > -1; i--) {
                     const { rows } = results[i];
-                    if(!rows.length) continue;
+                    if (!rows.length) continue;
                     const idx = rows.length - 1
                     const val = rows[idx][key]; // Picks val from last result row
                     if (val !== undefined) {
@@ -124,10 +127,13 @@ Db.reset = function () {
  */
 function init(newConfig = {}) {
     let config = {
-        max: 20,
-        idleTimeoutMillis: 60000,
-        port: 5432,
-        host: 'localhost',
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_DATABASE,
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 5432,
+        max: process.env.MAX_POOL || 20,
+        idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS || 60000,
         ssl: { rejectUnauthorized: false },
     };
 
@@ -142,27 +148,18 @@ function init(newConfig = {}) {
             port: params.port,
             database: params.pathname.split('/')[1],
         };
-    } else {
-        config = {
-            ...config,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            max: process.env.MAX_POOL,
-            idleTimeoutMillis: process.env.IDLE_TIMEOUT_MS,
-            port: process.env.DB_PORT,
-            host: process.env.DB_HOST,
-            database: process.env.DB_DATABASE,
-        }
     }
+
     if (process.env.NODE_ENV === 'test' && process.env.DB_DATABASE_TEST) {
         config.database = process.env.DB_DATABASE_TEST;
     }
 
-    config = { 
-        ...config, 
-        ...(newConfig.extendConfig && initializedDB.config),
-        ...newConfig 
+    config = {
+        ...config,
+        ...(newConfig.extendConfig && initializedDB && initializedDB.config),
+        ...newConfig
     };
+
 
     delete config.extendConfig;
 

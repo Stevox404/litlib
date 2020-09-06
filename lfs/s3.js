@@ -17,7 +17,10 @@ function S3(newConfig) {
     let awsS3, config;
     if (newConfig) {
         ({ awsS3, config } = init(newConfig));
-    } else if (initializedS3) {
+    } else {
+        if (!initializedS3) {
+            initializedS3 = init();
+        }
         ({ awsS3, config } = initializedS3);
     }
     if (!awsS3 || !config) {

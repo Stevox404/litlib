@@ -14,58 +14,76 @@ describe('ldb', () => {
         await execAsync(`psql -c "CREATE USER _ldb_test_user2 WITH PASSWORD '123'"`);
         await execAsync(`psql -c "CREATE DATABASE _ldb_test_db"`);
         await execAsync(`psql -c "CREATE DATABASE _ldb_test_db_test"`);
-        Db.init({
-            user: '_ldb_test_user',
-            password: '123',
-            database: '_ldb_test_db'
-        });
+    });
+
+    it('Should initialize db using DATABASE URL', async () => {
+        let error;
+        Db.reset();
+        process.env.DATABASE_URL = 'postgres://user:password@localhost:5432/database'
+        Db.init();
+        try {
+            new Db();
+        } catch (err) {
+            error = err
+        }
+        expect(error).to.be.undefined;
+        process.env.DATABASE_URL = ''
+    });
+
+    it('Should initialize db using other .env keys', async () => {
+        let error;
+        Db.reset();
+        process.env.DB_USER = '_ldb_test_user2';
+        process.env.DB_PASSWORD = '123';
+        process.env.DB_DATABASE = '_ldb_test_db';
+        Db.init();
+        try {
+            new Db();
+        } catch (err) {
+            error = err
+        }
+        expect(error).to.be.undefined;
+    });
+
+    it('Should initialize db object using passed param', async () => {
+        let error;
+        try {
+            // Successful init
+            Db.init({
+                user: '_ldb_test_user2',
+                password: '123',
+                database: '_ldb_test_db'
+            });
+            Db.reset();
+
+            new Db({
+                user: '_ldb_test_user2',
+                password: '123',
+                database: '_ldb_test_db',
+            });
+        } catch (err) {
+            error = err
+        }
+        expect(error).to.be.undefined;
     });
 
 
-    it('Should initialize db', async () => {
+    it('Should auto initialize db if possible', async () => {
         let error;
-        
-        // Init error
+        process.env.DB_USER = '_ldb_test_user1';
+        process.env.DB_PASSWORD = '123';
+        process.env.DB_DATABASE = '_ldb_test_db';
         try {
             Db.reset()
             new Db();
         } catch (err) {
             error = err
+            console.debug(error)
         }
-        expect(error.message).to.equal('Database not initialized');
-        error = undefined;
-        
-        
-        // Config error
-        const url = process.env.DATABASE_URL;
-        try {
-            process.env.DATABASE_URL = '';
-            Db.init({
-                user: '_ldb_test_user2',
-            });
-        } catch (err) {
-            error = err
-        }
-        expect(error.message).to.equal('Database improperly configured');
-        process.env.DATABASE_URL = url;
-        error = undefined;
-
-
-        // Successful init        
-        Db.init({
-            user: '_ldb_test_user2',
-            password: '123',
-            database: '_ldb_test_db'
-        });
+        expect(error).to.be.undefined;
     });
 
-    it('Should initialize db object using passed param', async () => {
-        new Db({
-            user: '_ldb_test_user2',
-            password: '123',
-            database: '_ldb_test_db',
-        });
-    });
+
 
     it('Should execute a query', async () => {
         const db = new Db();
@@ -80,7 +98,7 @@ describe('ldb', () => {
             'INSERT INTO users (name) VALUES (\'baz\')',
             'INSERT INTO users (name, _meta) VALUES (\'foo\', 3) RETURNING *',
             'UPDATE users SET name=\'bar\' WHERE name = #name#',
-            db.createUpdateStatement('users', {_meta: 36}, {_meta: 3, _op: '='}),
+            db.createUpdateStatement('users', { _meta: 36 }, { _meta: 3, _op: '=' }),
             'SELECT * FROM users WHERE name = \'bar\'',
         ]);
         expect(r.rows.length).to.be.equal(1);
@@ -147,7 +165,7 @@ describe('ldb', () => {
 
     it('Should ignore keys with undefined values in create statements', async () => {
         const db = new Db();
-        const query = db.createUpdateStatement('users', {userId: 56, name: undefined});
+        const query = db.createUpdateStatement('users', { userId: 56, name: undefined });
         expect(query.values.length).to.be.equal(1);
     });
 

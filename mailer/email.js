@@ -27,7 +27,7 @@ function Email() {
      */
     this.send = function (data) {
         const username = data.username || config.username;
-        if(!data.from && username){
+        if (!data.from && username) {
             data.from = `"${username}" ${config.email}`;
         }
         if (data.html) {
@@ -38,9 +38,13 @@ function Email() {
         return transporter.sendMail(data);
     }
 
-    if(process.env.NODE_ENV === 'test'){
+    this.getConfig = function (){
+        return JSON.parse(JSON.stringify(config));
+    }
+    
+    if (process.env.NODE_ENV === 'test') {
         /** @param {import('nodemailer').SentMessageInfo} info*/
-        this.getTestMessageUrl = function(info){
+        this.getTestMessageUrl = function (info) {
             return nodemailer.getTestMessageUrl(info);
         }
     }
@@ -50,16 +54,15 @@ Email.init = async function (newConfig) {
     initializedEmail = await init(newConfig);
 };
 
+Email.reset = function () {
+    initializedEmail = undefined;
+}
 
 
 /**
  * @param {EmailConfig} newConfig 
  */
 async function init(newConfig = {}) {
-    let testAccount = {};
-    if(process.env.NODE_ENV === 'test'){
-        testAccount = await nodemailer.createTestAccount();
-    }
 
     const config = {
         username: process.env.EMAIL_NAME,
@@ -69,8 +72,8 @@ async function init(newConfig = {}) {
             port: process.env.EMAIL_PORT,
             service: process.env.EMAIL_SERVICE,
             auth: {
-                user: testAccount.user || process.env.EMAIL_ADDRESS,
-                pass: testAccount.pass || process.env.EMAIL_PASSWORD,
+                user: process.env.EMAIL_ADDRESS,
+                pass: process.env.EMAIL_PASSWORD,
             },
             tls: {
                 rejectUnauthorized: false,
@@ -80,6 +83,13 @@ async function init(newConfig = {}) {
         ...newConfig,
     }
     delete config.extendConfig;
+
+    // Testing
+    if (process.env.NODE_ENV === 'test' && process.env.EMAIL_HOST === 'smtp.ethereal.email') {
+        const testAccount = await nodemailer.createTestAccount();
+        config.transportOpts.auth.user = testAccount.user;
+        config.transportOpts.auth.pass = testAccount.pass;
+    }
 
     const transporter = await nodemailer.createTransport(config.transportOpts)
     // await transporter.verify()
