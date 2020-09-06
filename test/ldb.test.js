@@ -70,7 +70,7 @@ describe('ldb', () => {
 
     it('Should auto initialize db if possible', async () => {
         let error;
-        process.env.DB_USER = '_ldb_test_user1';
+        process.env.DB_USER = '_ldb_test_user';
         process.env.DB_PASSWORD = '123';
         process.env.DB_DATABASE = '_ldb_test_db';
         try {
