@@ -1,6 +1,7 @@
+const AWSMock = require('mock-aws-s3');
+AWSMock.config.basePath = '/tmp/buckets/' 
 const aws = process.env.NODE_ENV === 'test' ?
-    require('mock-aws-s3') : require('aws-sdk');
-aws.config.region = 'us-east-1';
+    AWSMock : require('aws-sdk');
 const fsPromises = require('fs').promises;
 require('dotenv').config();
 
