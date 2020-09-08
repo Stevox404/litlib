@@ -14,8 +14,15 @@ module.exports.Email = Email;
 function Email() {
     /** @type {import('nodemailer').Transporter} */
     let { transporter, config } = initializedEmail || {};
-    if (!transporter || !config) {
-        throw new Error('Email not initialized');
+
+    async function tryInit(){
+        if (!transporter || !config) {
+            initializedEmail = await init();
+            if(!initializedEmail){
+                throw new Error('Email not initialized');
+            }
+            ({ transporter, config } = initializedEmail);
+        }
     }
 
 
@@ -25,7 +32,8 @@ function Email() {
      * @param {import('nodemailer/lib/mailer').Options} data
      * @param {string} data.username
      */
-    this.send = function (data) {
+    this.send = async function (data) {
+        await tryInit();
         const username = data.username || config.username;
         if (!data.from && username) {
             data.from = `"${username}" ${config.email}`;

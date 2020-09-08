@@ -21,6 +21,18 @@ describe('Mailer', function () {
         expect(email.getConfig().username).to.be.equal('Foo');
     });
 
+    it('Should auto initialize Email when sending if possible', async () => {
+        Email.reset();
+        process.env.EMAIL_NAME='Batman'
+        const email = new Email();
+        await email.send({
+            to: 'jason@milion.com',
+            subject: 'BOY!',
+            html: '<b>BOY!</b>'
+        });
+        expect(email.getConfig().username).to.be.equal('Batman');
+    });
+
     it('Should send an email', async () => {
         await Email.init();
         const email = new Email();
