@@ -132,14 +132,14 @@ S3.reset = function () {
 function init(newConfig = {}) {
     const config = {
         bucket: process.env.S3_BUCKET,
-        region: process.env.S3_REGION,
+        region: process.env.S3_REGION || 'us-east-1',
         ...(newConfig.extendConfig && initializedEmail.config),
         ...newConfig,
     }
     delete config.extendConfig;
     
-    if (!config.bucket || !config.region) {
-        throw new Error('Requires region and bucket for initialization');
+    if (!config.bucket) {
+        throw new Error('Requires bucket for initialization');
     }
     config.url = `https://${config.bucket}.s3.amazonaws.com`;
     const awsS3 = new aws.S3();
