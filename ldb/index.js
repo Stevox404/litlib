@@ -11,7 +11,7 @@ module.exports.Db = Db;
  * @param {import("pg").PoolConfig=} newConfig 
  */
 function Db(newConfig) {
-    /**@type {{pool: Pool}} */
+    /**@type {Pool} */
     let pool, config;
     if (newConfig) {
         ({ pool, config } = init(newConfig));
@@ -39,7 +39,7 @@ function Db(newConfig) {
         if (Array.isArray(statement)) {
             return _db_transaction(statement);
         } else {
-            return pool.query(statement)
+            return pool.query(statement);
         }
     }
 
@@ -52,7 +52,6 @@ function Db(newConfig) {
     async function _db_transaction(statements) {
         const client = await pool.connect();
         await client.query('BEGIN');
-
         const results = [];
         try {
             for (let i = 0, l = statements.length; i < l; i++) {
@@ -71,13 +70,16 @@ function Db(newConfig) {
                     }
                 }
             };
+
+            await client.query('COMMIT');
         } catch (err) {
             console.warn('Unable to complete transaction, rolling back.', err);
             await client.query('ROLLBACK');
             throw err;
+        } finally {
+            client.release();
         }
 
-        await client.query('COMMIT');
         return results;
 
 
