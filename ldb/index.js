@@ -29,6 +29,7 @@ function Db(newConfig) {
     this.createInsertStatement = qb.createInsertStatement;
     this.createUpdateStatement = qb.createUpdateStatement;
 
+
     /**
      * Executes a database query.
      * @typedef {import('pg').QueryConfig} QueryStatement
@@ -173,9 +174,3 @@ function init(newConfig = {}) {
     const pool = new Pool(config);
     return { pool, config };
 }
-
-
-
-/**
- * @typedef {import('pg').QueryConfig} QueryStatement
- */
