@@ -93,7 +93,7 @@ function Db(newConfig) {
          * @param {string} queryText - Query with placeholders
          */
         function formatStatement(queryText) {
-            let formatted = queryText.replace(/\s#(.+?)#(?!\w)/g, (_, key) => {
+            let formatted = queryText.replace(/(\W)#(.+?)#(?!\w)/g, (_, _m1, key) => {
                 const newVal = deepSearchKeyValue(key.toLowerCase());
                 if(newVal !== null){
                     return `'${deepSearchKeyValue(key.toLowerCase())}'`;
