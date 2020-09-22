@@ -94,11 +94,11 @@ function Db(newConfig) {
          */
         function formatStatement(queryText) {
             let formatted = queryText.replace(/(\W)#(.+?)#(?!\w)/g, (_, _m1, key) => {
-                const newVal = deepSearchKeyValue(key.toLowerCase());
-                if(newVal !== null){
-                    return `'${deepSearchKeyValue(key.toLowerCase())}'`;
+                const foundVal = deepSearchKeyValue(key.toLowerCase());
+                if(foundVal !== null){
+                    return `${_m1}'${foundVal}'`;
                 }
-                return newVal;
+                return `${_m1}${foundVal}`;
             });
             return formatted;
 
