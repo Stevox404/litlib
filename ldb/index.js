@@ -109,6 +109,9 @@ function Db(newConfig) {
                     const idx = rows.length - 1
                     const val = rows[idx][key]; // Picks val from last result row
                     if (val !== undefined) {
+                        if(typeof val === 'object' && val.constructor === Date){
+                            return val.toISOString();
+                        }
                         return val;
                     }
                 }
