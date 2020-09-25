@@ -15,10 +15,10 @@ function Email() {
     /** @type {import('nodemailer').Transporter} */
     let { transporter, config } = initializedEmail || {};
 
-    async function tryInit(){
+    async function tryInit() {
         if (!transporter || !config) {
             initializedEmail = await init();
-            if(!initializedEmail){
+            if (!initializedEmail) {
                 throw new Error('Email not initialized');
             }
             ({ transporter, config } = initializedEmail);
@@ -43,18 +43,26 @@ function Email() {
             footer && (data.html += footer);
         }
 
-        return transporter.sendMail(data);
+        /** @type {import('nodemailer').SentMessageInfo} info*/
+        const info = await transporter.sendMail(data);
+    
+        // Testing
+        if (process.env.NODE_ENV === 'test' && process.env.EMAIL_HOST === 'smtp.ethereal.email') {
+            console.info(nodemailer.getTestMessageUrl(info));
+        }
+
+        return info;
     }
 
-    this.getConfig = function (){
-        return JSON.parse(JSON.stringify(config));
-    }
-    
-    if (process.env.NODE_ENV === 'test') {
+    if (process.env.NODE_ENV === 'test'  && process.env.EMAIL_HOST === 'smtp.ethereal.email') {
         /** @param {import('nodemailer').SentMessageInfo} info*/
         this.getTestMessageUrl = function (info) {
             return nodemailer.getTestMessageUrl(info);
         }
+    }
+
+    this.getConfig = function () {
+        return JSON.parse(JSON.stringify(config));
     }
 }
 

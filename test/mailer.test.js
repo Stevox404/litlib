@@ -1,7 +1,7 @@
 const { Email } = require('../mailer');
 const { expect } = require('chai');
 
-describe('Mailer', function () {
+describe.only('Mailer', function () {
     this.timeout(5000);
 
     it('Should initialize Email using .env params', async () => {
@@ -42,7 +42,5 @@ describe('Mailer', function () {
             html: '<b>BOY!</b>'
         });
         expect(info).to.not.be.null;
-        const url = email.getTestMessageUrl(info);
-        console.log(url)
     });
 });
