@@ -1,28 +1,16 @@
 {
     "name": "litlib",
     "version": "2.0.11",
-    "description": "",
+    "description": "A little library of server functions",
     "main": "index.js",
-    "scripts": {
-        "test": "mocha --bail --exit",
-        "test-coverage": "nyc mocha --bail --exit"
-    },
     "keywords": [],
     "author": "Ben Steve",
     "license": "ISC",
     "dependencies": {
-        "aws-sdk": "^2.747.0",
-        "dotenv": "^8.2.0",
-        "mock-aws-s3": "^4.0.1",
-        "nodemailer": "^6.4.11",
-        "pg": "^8.3.3"
-    },
-    "peerDependencies": {
-        "express": "^4.17.1"
-    },
-    "devDependencies": {
-        "chai": "^4.2.0",
-        "mocha": "^7.2.0",
-        "nyc": "^15.1.0"
+        "litlib-cipher": "github:Stevox404/litlib-cipher#semver:^v1.0",
+        "litlib-mailer": "github:Stevox404/litlib-mailer#semver:^v1.0",
+        "litlib-pgdb": "github:Stevox404/litlib-pgdb#semver:^v1.0",
+        "litlib-s3": "github:Stevox404/litlib-s3#semver:^v1.0",
+        "litlib-utils": "github:Stevox404/litlib-utils#semver:^v1.0"
     }
 }
