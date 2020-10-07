@@ -1,6 +1,6 @@
 {
     "name": "litlib",
-    "version": "2.0.11",
+    "version": "3.0.0",
     "description": "A little library of server functions",
     "main": "index.js",
     "keywords": [],
